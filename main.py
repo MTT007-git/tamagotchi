@@ -157,13 +157,14 @@ wnd.overrideredirect(1)
 wnd.attributes('-topmost', 1)
 wnd.attributes("-transparentcolor", "white")
 progress = IntVar(wnd, value=0)
-tamagotchi_img = Image.open("tamagotchi.png").convert("RGBA")
-ImageDraw.floodfill(tamagotchi_img, (tamagotchi_img.size[0] // 2, tamagotchi_img.size[1] // 2), (240, 240, 240, 255))
+tamagotchi_image = Image.open("tamagotchi.png").convert("RGBA")
+ImageDraw.floodfill(tamagotchi_image, (tamagotchi_image.size[0] // 2, tamagotchi_image.size[1] // 2),
+                    (240, 240, 240, 255))
 tamagotchi_size = 360
-tamagotchi_size = (tamagotchi_size, tamagotchi_img.size[1] * tamagotchi_size // tamagotchi_img.size[0])
-tamagotchi_img = ImageTk.PhotoImage(
-    tamagotchi_img.resize(tamagotchi_size), **{"master": wnd})  # PyCharm raises a warning if I do master=wnd
-Label(wnd, image=tamagotchi_img, background="white").place(relwidth=1, relheight=1)
+tamagotchi_size = (tamagotchi_size, tamagotchi_image.size[1] * tamagotchi_size // tamagotchi_image.size[0])
+tamagotchi_image = ImageTk.PhotoImage(
+    tamagotchi_image.resize(tamagotchi_size), **{"master": wnd})  # PyCharm raises a warning if I do master=wnd
+Label(wnd, image=tamagotchi_image, background="white").place(relwidth=1, relheight=1)
 difficulty = StringVar()
 if os.path.exists("chars.txt"):
     with open("chars.txt", "r", encoding="utf-8") as chars:
@@ -192,7 +193,11 @@ Progressbar(wnd, variable=progress).pack(ipadx=40)
 wnd.geometry(f"{tamagotchi_size[0]}x{tamagotchi_size[1]}+{wnd.winfo_screenwidth() // 2 - tamagotchi_size[0] // 2}"
              f"+{wnd.winfo_screenheight() // 2 - tamagotchi_size[1] // 2}")
 
-size = 480
+tamagotchi_size = 480
+size = 374
+pos = (164, 308 - 20)
+
+tamagotchi_img = Image.open("tamagotchi.png").convert("RGBA")
 
 anims = {}
 d = {"idle": 52, "hungry": 52, "thirsty": 52, "playful": 27, "pet": 52, "dirty": 52, "wc": 52}
@@ -203,8 +208,12 @@ for pair in d.items():
         summ += 1
         progress.set(summ * 100 // (sum(d.values()) - len(d)))
         wnd.update()
-        anims[pair[0]].append(ImageTk.PhotoImage(Image.open(
-            f"{pair[0]}/ezgif-frame-{'0' * (3 - len(str(frame)))}{frame}.png").resize((size, size))))
+        im = tamagotchi_img.copy()
+        im.paste(Image.open(f"{pair[0]}/ezgif-frame-{'0' * (3 - len(str(frame)))}{frame}.png").convert("RGBA").resize((
+                size, size)), pos)
+        im.paste(tamagotchi_img, (0, 0), tamagotchi_img)
+        im = im.resize((tamagotchi_size * im.size[0] // im.size[1], tamagotchi_size))
+        anims[pair[0]].append(ImageTk.PhotoImage(im))
 
 wnd.destroy()
 root.deiconify()
